@@ -1,9 +1,30 @@
 # -*- coding:utf-8 -*-
+import os
+import inspect
 import numpy as np
 import argparse
+from scipy.stats import multivariate_normal
 import matplotlib
 matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+
+def get_fname(i):
+    if 0 <= i and i < 10:
+        fname = "00000{}.png".format(i)
+    elif 10 <= i and i < 100:
+        fname = "0000{}.png".format(i)
+    elif 100 <= i and i < 1000:
+        fname = "000{}.png".format(i)
+    elif 1000 <= i and i < 10000:
+        fname = "00{}.png".format(i)
+    elif 10000 <= i and i < 100000:
+        fname = "0{}.png".format(i)
+    elif 100000 <= i and i < 1000000:
+        fname = "{}.png".format(i)
+    return fname
+
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dim', type=int, default=2, help="")
@@ -13,9 +34,14 @@ parser.add_argument('--lr', type = float, default=0.1, help ="")
 parser.add_argument('--batch_size', type = int, default=1, help ="")
 args = parser.parse_args()
 
-mean = [10, 5]
+#mean = [10, 5]
+mean = np.random.randint(-10,10,args.dim)
+print(mean)
 #cov = [[1, 0], [0, 1]]  # diagonal covariance
-cov = [[3, 5], [5, 1]]  # diagonal covariance
+#cov = [[3, 5], [5, 1]]  # diagonal covariance
+cov = np.matrix(np.eye(args.dim)) * 5.0
+if np.all(np.linalg.eigvals(cov) > 0):
+    print("cov is positive semi-definite matrix")
 
 x = np.random.multivariate_normal(mean, cov, args.num_sample).T
 x = np.asmatrix(x)
@@ -50,6 +76,7 @@ remainder = args.num_sample - num_batches * args.batch_size
 batches = [x[:,j*args.batch_size:(j+1)*args.batch_size] for j in range(num_batches-1)]
 batches.append(x[:,(num_batches-1)*args.batch_size:])
 stop_count = 0
+losses = []
 for k in range(args.epoch):
     for j in range(num_batches):
         s = batches[j].shape[1]
@@ -72,8 +99,9 @@ for k in range(args.epoch):
         for j in range(args.dim):
             J -= M[j,j]
     J = J/args.num_sample
+    losses.append(J[0,0])
     print("Epoch {} | Loss {} | best loss {} | f norm {} | stop count {}".format(
-        k+1,J,best_J,np.linalg.norm(mean-mu)+np.linalg.norm(M-np.matrix(cov)),stop_count))
+        k+1,J[0,0],best_J[0,0],np.linalg.norm(mean-mu)+np.linalg.norm(M-np.matrix(cov)),stop_count))
     if stop_count > 4:
         break
     if J > best_J:
@@ -82,6 +110,50 @@ for k in range(args.epoch):
     else:
         best_J = J
         stop_count = 0
+        
+    if args.dim == 2:
+        w = 4
+        gx,gy = np.mgrid[mean[0]-w:mean[0]+w:.1,mean[1]-w:mean[1]+w:.1]
+        pos = np.dstack((gx,gy))
+        rv = multivariate_normal(mean,cov)
+        rv2 = multivariate_normal([mu[0,0],mu[1,0]],M.tolist())
+        plt.figure(figsize=(8,6))
+        gs = gridspec.GridSpec(2,2)
+
+        plt.subplot(gs[0,0])
+        plt.contourf(gx,gy,rv.pdf(pos))
+        
+        plt.subplot(gs[0,1])
+        plt.contourf(gx,gy,rv2.pdf(pos))
+        
+        plt.subplot(gs[1,:])
+        #plt.set_xlim(0.0,args.epoch+1)
+        ind = [j+1 for j in range(k+1)]
+        plt.xlim(0,args.epoch+1)
+        plt.ylim(-0.3,0.0)
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss")
+        plt.plot(ind,losses,'x')
+        '''
+        ax = fig.add_subplot(131)
+        ax2 = fig.add_subplot(132)
+        ax3 = fig.add_subplot(133)
+        ax.contourf(gx,gy,rv.pdf(pos))
+        ax2.contourf(gx,gy,rv2.pdf(pos))
+        ind = [j+1 for j in range(k+1)]
+        print(ind)
+        print(losses)
+        ax3.set_xlim(0.0,args.epoch+1)
+        ax3.plot(ind,losses)
+        '''
+        '''
+        for x in inspect.getmembers(ax3,inspect.ismethod):
+            print(x[0])
+        '''
+        #plt.show()
+        plt.savefig(os.path.join('fig',get_fname(k)))
+        plt.close("all")
+
 print("True parameter")
 print(mean)
 print(cov)
