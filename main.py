@@ -5,7 +5,7 @@ import numpy as np
 import argparse
 from scipy.stats import multivariate_normal
 import matplotlib
-matplotlib.use("Qt5Agg")
+#matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
@@ -29,7 +29,7 @@ def get_fname(i):
 parser = argparse.ArgumentParser()
 parser.add_argument('--dim', type=int, default=2, help="")
 parser.add_argument('--num_sample', type=int, default=30, help="")
-parser.add_argument('--epoch', type = int, default=10, help ="if cuda is available, program will use cuda.")
+parser.add_argument('--epoch', type = int, default=10, help ="")
 parser.add_argument('--lr', type = float, default=0.1, help ="")
 parser.add_argument('--batch_size', type = int, default=1, help ="")
 args = parser.parse_args()
