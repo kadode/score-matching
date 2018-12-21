@@ -9,23 +9,6 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-def get_fname(i):
-    if 0 <= i and i < 10:
-        fname = "00000{}.png".format(i)
-    elif 10 <= i and i < 100:
-        fname = "0000{}.png".format(i)
-    elif 100 <= i and i < 1000:
-        fname = "000{}.png".format(i)
-    elif 1000 <= i and i < 10000:
-        fname = "00{}.png".format(i)
-    elif 10000 <= i and i < 100000:
-        fname = "0{}.png".format(i)
-    elif 100000 <= i and i < 1000000:
-        fname = "{}.png".format(i)
-    return fname
-
-
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--dim', type=int, default=2, help="")
 parser.add_argument('--num_sample', type=int, default=30, help="")
@@ -36,12 +19,18 @@ args = parser.parse_args()
 
 #mean = [10, 5]
 mean = np.random.randint(-10,10,args.dim)
+#mean = np.random.random(args.dim)
+
+if not os.path.isdir("fig"):
+    os.makedirs("fig")
+
 print(mean)
 #cov = [[1, 0], [0, 1]]  # diagonal covariance
 #cov = [[3, 5], [5, 1]]  # diagonal covariance
-cov = np.matrix(np.eye(args.dim)) * 5.0
-if np.all(np.linalg.eigvals(cov) > 0):
-    print("cov is positive semi-definite matrix")
+#cov = np.matrix(np.eye(args.dim)) * 5.0
+#x = np.matrix(np.random.rand(args.dim,args.dim))
+x = np.matrix([[4,-5],[1,7]])
+cov = x*x.T
 
 x = np.random.multivariate_normal(mean, cov, args.num_sample).T
 x = np.asmatrix(x)
@@ -100,8 +89,9 @@ for k in range(args.epoch):
             J -= M[j,j]
     J = J/args.num_sample
     losses.append(J[0,0])
+    invM = np.linalg.inv(M)
     print("Epoch {} | Loss {} | best loss {} | f norm {} | stop count {}".format(
-        k+1,J[0,0],best_J[0,0],np.linalg.norm(mean-mu)+np.linalg.norm(M-np.matrix(cov)),stop_count))
+        k+1,J[0,0],best_J[0,0],np.linalg.norm(mean-mu)+np.linalg.norm(invM-np.matrix(cov)),stop_count))
     if stop_count > 4:
         break
     if J > best_J:
@@ -116,7 +106,7 @@ for k in range(args.epoch):
         gx,gy = np.mgrid[mean[0]-w:mean[0]+w:.1,mean[1]-w:mean[1]+w:.1]
         pos = np.dstack((gx,gy))
         rv = multivariate_normal(mean,cov)
-        rv2 = multivariate_normal([mu[0,0],mu[1,0]],M.tolist())
+        rv2 = multivariate_normal([mu[0,0],mu[1,0]],invM.tolist())
         plt.figure(figsize=(8,6))
         gs = gridspec.GridSpec(2,2)
 
@@ -130,7 +120,7 @@ for k in range(args.epoch):
         #plt.set_xlim(0.0,args.epoch+1)
         ind = [j+1 for j in range(k+1)]
         plt.xlim(0,args.epoch+1)
-        plt.ylim(-0.3,0.0)
+        #plt.ylim(-0.3,0.0)
         plt.xlabel("Epoch")
         plt.ylabel("Loss")
         plt.plot(ind,losses,'x')
@@ -151,7 +141,7 @@ for k in range(args.epoch):
             print(x[0])
         '''
         #plt.show()
-        plt.savefig(os.path.join('fig',get_fname(k)))
+        plt.savefig(os.path.join('fig',"{}".format(k).zfill(8)))
         plt.close("all")
 
 print("True parameter")
@@ -159,4 +149,4 @@ print(mean)
 print(cov)
 print("Estimated parameter")
 print(mu)
-print(M)
+print(np.linalg.inv(M))
