@@ -5,7 +5,8 @@
 ![demo](https://raw.github.com/wiki/kadode/score-matching/images/out.gif)
 -->
 True parameter
-$\[
+$$
+\[
   A = \left[
       \begin{array}{rrr}
             -1 & 20 & 3 \\
@@ -13,7 +14,8 @@ $\[
 		        7 & 8 & -9
 			    \end{array}
 			      \right]
-			      \]$
+			      \]
+			      $$
 [ 8 -4]
 [[ 41 -31]
  [-31  50]]
