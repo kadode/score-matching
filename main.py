@@ -5,7 +5,7 @@ import numpy as np
 import argparse
 from scipy.stats import multivariate_normal
 import matplotlib
-#matplotlib.use("Qt5Agg")
+matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
