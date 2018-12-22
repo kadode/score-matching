@@ -5,12 +5,15 @@
 ![demo](https://raw.github.com/wiki/kadode/score-matching/images/out.gif)
 -->
 True parameter
-$$
-\begin{eqnarray}
-4a &=& ((a+a)+a)+a \\
-   &=& (a+a)+(a+a)
-   \end{eqnarray}
-   $$	
+$\[
+  A = \left[
+      \begin{array}{rrr}
+            -1 & 20 & 3 \\
+	          4 & -5 & 600 \\
+		        7 & 8 & -9
+			    \end{array}
+			      \right]
+			      \]$
 [ 8 -4]
 [[ 41 -31]
  [-31  50]]
